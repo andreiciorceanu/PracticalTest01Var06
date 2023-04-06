@@ -3,8 +3,12 @@ package ro.pub.cs.systems.eim.practicaltest01var06;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -22,7 +26,18 @@ public class PracticalTest01Var06MainActivity extends AppCompatActivity {
     String a,b,c;
     private int nrCheckedBoxes = 3;
     private int scor = 0;
-    private StringBuilder sb = new StringBuilder();
+    IntentFilter intentFilter = new IntentFilter();
+
+    private MessageBroadcastReceiver messageBroadcastReceiver = new MessageBroadcastReceiver();
+    private class MessageBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.d("onReceive", intent.getStringExtra("message"));
+            String mesaj =  "Victory " + intent.getStringExtra("message");
+            //System.out.println("`````````````mesajul este:" + mesaj);
+            Toast.makeText(getApplicationContext(), mesaj, Toast.LENGTH_LONG).show();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,17 +96,8 @@ public class PracticalTest01Var06MainActivity extends AppCompatActivity {
         } else {
             scor = 0;
         }
-
-        if(savedInstanceState != null) {
-            if(savedInstanceState.containsKey("scor")) {
-                scor = savedInstanceState.getInt("scor");
-            } else {
-                scor = 0;
-            }
-        } else {
-            scor = 0;
-        }
         //Toast.makeText(this, "The result of the operation is " + scor, Toast.LENGTH_SHORT).show();
+        intentFilter.addAction("calculareScor");
     }
 
     @Override
@@ -101,6 +107,12 @@ public class PracticalTest01Var06MainActivity extends AppCompatActivity {
             int scorPrimit = data.getIntExtra("scor", 0);
             scor += scorPrimit;
             Toast.makeText(this, "The result of the operation is " + scor, Toast.LENGTH_SHORT).show();
+            if (scor > 0) {
+                Intent intent1 = new Intent(getApplicationContext(), PracticalTest01Var06Service.class);
+                intent1.putExtra("scorTotal", scor);
+                //System.out.println("scor----------");
+                getApplicationContext().startService(intent1);
+            }
         }
     }
 
@@ -125,5 +137,27 @@ public class PracticalTest01Var06MainActivity extends AppCompatActivity {
             scor = 0;
         }
         Toast.makeText(this, "The result of the operation is " + scor, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Intent intent2 = new Intent(getApplicationContext(), PracticalTest01Var06Service.class);
+        getApplicationContext().stopService(intent2);
+        Toast.makeText(getApplicationContext(), "Service stopped", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d("onResume", "onResume() method was invoked");
+        super.onResume();
+        registerReceiver(messageBroadcastReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d("onPause", "onPause() method was invoked");
+        unregisterReceiver(messageBroadcastReceiver);
+        super.onPause();
     }
 }
