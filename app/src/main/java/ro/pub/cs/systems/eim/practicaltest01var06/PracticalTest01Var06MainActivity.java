@@ -81,6 +81,16 @@ public class PracticalTest01Var06MainActivity extends AppCompatActivity {
         } else {
             scor = 0;
         }
+
+        if(savedInstanceState != null) {
+            if(savedInstanceState.containsKey("scor")) {
+                scor = savedInstanceState.getInt("scor");
+            } else {
+                scor = 0;
+            }
+        } else {
+            scor = 0;
+        }
         //Toast.makeText(this, "The result of the operation is " + scor, Toast.LENGTH_SHORT).show();
     }
 
@@ -98,5 +108,22 @@ public class PracticalTest01Var06MainActivity extends AppCompatActivity {
         Random random = new Random();
         int number = random.nextInt(4);
         return options[number];
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("scor", scor);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState.containsKey("scor")) {
+            scor = savedInstanceState.getInt("scor");
+        } else  {
+            scor = 0;
+        }
+        Toast.makeText(this, "The result of the operation is " + scor, Toast.LENGTH_SHORT).show();
     }
 }
